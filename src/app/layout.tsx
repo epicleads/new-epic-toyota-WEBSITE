@@ -5,6 +5,8 @@ import { BUSINESS_INFO, META_DEFAULTS } from "./lib/business-info";
 import StructuredData from "./components/seo/StructuredData";
 import GeoTargeting from "./components/seo/GeoTargeting";
 import ConsentManager from "./components/analytics/ConsentManager";
+import GoogleAnalytics from "./components/analytics/GoogleAnalytics";
+import GoogleTagManager, { GoogleTagManagerNoScript } from "./components/analytics/GoogleTagManager";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -137,19 +139,23 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link rel="dns-prefetch" href="//www.google-analytics.com" />
+        <link rel="dns-prefetch" href="//www.googletagmanager.com" />
         <StructuredData />
         <GeoTargeting />
+        <GoogleTagManager />
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-white text-gray-900`}
         itemScope
         itemType="https://schema.org/WebPage"
       >
+        <GoogleTagManagerNoScript />
         <noscript>
           <div style={{ padding: "20px", textAlign: "center", backgroundColor: "#f3f4f6" }}>
             For the best experience, please enable JavaScript in your browser to view Epic Toyota Chennai.
           </div>
         </noscript>
+        <GoogleAnalytics />
         {children}
         <ConsentManager />
       </body>
