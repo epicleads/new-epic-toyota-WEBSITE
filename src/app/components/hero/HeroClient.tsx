@@ -81,20 +81,33 @@ export default function HeroClient({ bannerData }: HeroClientProps) {
   return (
     <section className="relative h-screen overflow-hidden bg-white">
 
-      {/* Hero Banner Image */}
+      {/* Hero Banner Images with Slide Effect */}
       <div className="absolute inset-0">
-        <Image
-          src={currentImage}
-          alt={bannerData.cta_text}
-          fill
-          className={`object-cover transition-all duration-700 ${
-            isLoaded ? 'scale-100 opacity-100' : 'scale-105 opacity-0'
-          }`}
-          onLoad={() => setIsLoaded(true)}
-          onError={(e) => console.error('Image failed to load:', currentImage, e)}
-          priority
-          sizes="100vw"
-        />
+        <AnimatePresence initial={false}>
+          <motion.div
+            key={currentImageIndex}
+            initial={{ x: '100%' }}
+            animate={{ x: 0 }}
+            exit={{ x: '-100%' }}
+            transition={{
+              duration: 1,
+              ease: [0.32, 0.72, 0, 1]
+            }}
+            className="absolute inset-0 w-full h-full"
+            style={{ willChange: 'transform' }}
+          >
+            <Image
+              src={currentImage}
+              alt={bannerData.cta_text}
+              fill
+              className="object-cover"
+              onLoad={() => setIsLoaded(true)}
+              onError={(e) => console.error('Image failed to load:', currentImage, e)}
+              priority={currentImageIndex === 0}
+              sizes="100vw"
+            />
+          </motion.div>
+        </AnimatePresence>
       </div>
 
      
