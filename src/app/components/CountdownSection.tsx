@@ -7,7 +7,8 @@ import ContactForm from "./contactForm";
 
 
 export default function CountdownSection() {
-  const [endDate, setEndDate] = useState<Date | null>(null);
+  // Set default end date to October 22nd, 2025 to avoid hydration issues
+  const [endDate, setEndDate] = useState<Date | null>(new Date('2025-10-22T23:59:59'));
   const [showForm, setShowForm] = useState(false);
   const [timeLeft, setTimeLeft] = useState({
     days: "00",
@@ -15,6 +16,12 @@ export default function CountdownSection() {
     minutes: "00",
     seconds: "00",
   });
+  const [mounted, setMounted] = useState(false);
+
+  // Set mounted state
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Fetch active banner from backend
   useEffect(() => {
@@ -28,11 +35,13 @@ export default function CountdownSection() {
         if (data.ok && data.data && data.data.end_date) {
           setEndDate(new Date(data.data.end_date));
         } else {
-          setEndDate(null);
+          // Keep fallback to October 22nd, 2025 if backend is down
+          setEndDate(new Date('2025-10-22T23:59:59'));
         }
       } catch (err) {
         console.error("Failed to fetch banner:", err);
-        setEndDate(null);
+        // Keep fallback to October 22nd, 2025 if backend is down
+        setEndDate(new Date('2025-10-22T23:59:59'));
       }
     }
     fetchBanner();
@@ -40,49 +49,178 @@ export default function CountdownSection() {
 
   // Countdown logic
   useEffect(() => {
-    if (!endDate) return;
-    const interval = setInterval(() => {
+    if (!endDate || !mounted) return;
+
+    // Calculate initial time immediately
+    const calculateTime = () => {
       const now = new Date().getTime();
       const diff = endDate.getTime() - now;
 
       if (diff <= 0) {
-        clearInterval(interval);
-        setEndDate(null);
-        return;
+        return null;
       }
 
-      const days = String(Math.floor(diff / (1000 * 60 * 60 * 24))).padStart(
-        2,
-        "0"
-      );
-      const hours = String(
-        Math.floor((diff / (1000 * 60 * 60)) % 24)
-      ).padStart(2, "0");
-      const minutes = String(
-        Math.floor((diff / (1000 * 60)) % 60)
-      ).padStart(2, "0");
+      const days = String(Math.floor(diff / (1000 * 60 * 60 * 24))).padStart(2, "0");
+      const hours = String(Math.floor((diff / (1000 * 60 * 60)) % 24)).padStart(2, "0");
+      const minutes = String(Math.floor((diff / (1000 * 60)) % 60)).padStart(2, "0");
       const seconds = String(Math.floor((diff / 1000) % 60)).padStart(2, "0");
 
-      setTimeLeft({ days, hours, minutes, seconds });
+      return { days, hours, minutes, seconds };
+    };
+
+    // Set initial time
+    const initialTime = calculateTime();
+    if (initialTime) {
+      setTimeLeft(initialTime);
+    }
+
+    // Update every second
+    const interval = setInterval(() => {
+      const newTime = calculateTime();
+      if (newTime) {
+        setTimeLeft(newTime);
+      } else {
+        clearInterval(interval);
+        setEndDate(null);
+      }
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [endDate]);
+  }, [endDate, mounted]);
+
+  // Don't render countdown on server to avoid hydration issues
+  if (!mounted) {
+    return (
+      <section className="w-full bg-black text-white py-16 text-center relative overflow-hidden">
+        <div className="max-w-6xl mx-auto px-6 h-96 flex items-center justify-center">
+          <div className="text-2xl text-gray-400">Loading...</div>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <>
-      <section className="w-full bg-white text-gray-900 py-16 text-center relative overflow-hidden">
-        {/* Subtle geometric background pattern */}
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-10 left-10 w-32 h-32 border border-red-400/10 rotate-45"></div>
-          <div className="absolute top-32 right-20 w-16 h-16 border border-red-400/10 rotate-12"></div>
-          <div className="absolute bottom-20 left-1/4 w-24 h-24 border border-red-400/10 rotate-45"></div>
-          <div className="absolute bottom-10 right-10 w-20 h-20 border border-red-400/10"></div>
-        </div>
+      <section className="w-full bg-black text-white py-16 text-center relative overflow-hidden">
+        {/* Left Diya */}
+        <motion.div
+          className="absolute left-8 md:left-16 top-1/2 transform -translate-y-1/2 hidden lg:block"
+          animate={{
+            y: [0, -10, 0],
+          }}
+          transition={{
+            duration: 3,
+            repeat: Infinity,
+            ease: "easeInOut",
+          }}
+        >
+          <div className="relative">
+            {/* Flame */}
+            <motion.div
+              animate={{
+                scale: [1, 1.2, 1],
+                opacity: [0.8, 1, 0.8],
+              }}
+              transition={{
+                duration: 1.5,
+                repeat: Infinity,
+                ease: "easeInOut",
+              }}
+              className="absolute -top-10 left-1/2 transform -translate-x-1/2 w-5 h-8 bg-gradient-to-t from-orange-600 via-yellow-400 to-yellow-200 rounded-full"
+              style={{
+                filter: 'blur(1px)',
+                boxShadow: '0 0 30px rgba(255, 165, 0, 0.8), 0 0 60px rgba(255, 140, 0, 0.5)',
+              }}
+            />
+            {/* Diya bowl */}
+            <div className="w-16 h-8 bg-gradient-to-b from-orange-700 to-orange-900 rounded-b-full border-2 border-orange-500 relative">
+              <div className="absolute -top-1 left-1/2 transform -translate-x-1/2 w-3 h-3 bg-yellow-400 rounded-full shadow-lg" />
+            </div>
+          </div>
+        </motion.div>
 
-        {/* Red accent lines */}
-        <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-red-400/30 to-transparent"></div>
-        <div className="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-red-400/30 to-transparent"></div>
+        {/* Right Diya */}
+        <motion.div
+          className="absolute right-8 md:right-16 top-1/2 transform -translate-y-1/2 hidden lg:block"
+          animate={{
+            y: [0, -10, 0],
+          }}
+          transition={{
+            duration: 3,
+            repeat: Infinity,
+            ease: "easeInOut",
+            delay: 1.5,
+          }}
+        >
+          <div className="relative">
+            {/* Flame */}
+            <motion.div
+              animate={{
+                scale: [1, 1.2, 1],
+                opacity: [0.8, 1, 0.8],
+              }}
+              transition={{
+                duration: 1.5,
+                repeat: Infinity,
+                ease: "easeInOut",
+                delay: 0.75,
+              }}
+              className="absolute -top-10 left-1/2 transform -translate-x-1/2 w-5 h-8 bg-gradient-to-t from-orange-600 via-yellow-400 to-yellow-200 rounded-full"
+              style={{
+                filter: 'blur(1px)',
+                boxShadow: '0 0 30px rgba(255, 165, 0, 0.8), 0 0 60px rgba(255, 140, 0, 0.5)',
+              }}
+            />
+            {/* Diya bowl */}
+            <div className="w-16 h-8 bg-gradient-to-b from-orange-700 to-orange-900 rounded-b-full border-2 border-orange-500 relative">
+              <div className="absolute -top-1 left-1/2 transform -translate-x-1/2 w-3 h-3 bg-yellow-400 rounded-full shadow-lg" />
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Subtle Fireworks */}
+        {mounted && [...Array(3)].map((_, i) => (
+          <motion.div
+            key={`firework-${i}`}
+            className="absolute pointer-events-none"
+            style={{
+              left: `${25 + i * 25}%`,
+              top: '15%',
+            }}
+            initial={{ opacity: 0, scale: 0 }}
+            animate={{
+              opacity: [0, 0.4, 0],
+              scale: [0, 1.5, 2],
+            }}
+            transition={{
+              duration: 3,
+              repeat: Infinity,
+              delay: i * 2,
+              ease: "easeOut",
+            }}
+          >
+            {[...Array(12)].map((_, j) => {
+              const colors = ['#FFD700', '#FF6B35', '#FF1493', '#00FFFF', '#32CD32', '#FF69B4'];
+              const color = colors[j % colors.length];
+              return (
+                <div
+                  key={j}
+                  className="absolute w-0.5 h-12 rounded-full"
+                  style={{
+                    transform: `rotate(${j * 30}deg)`,
+                    transformOrigin: 'center',
+                    left: '50%',
+                    top: '50%',
+                    marginLeft: '-1px',
+                    marginTop: '-24px',
+                    background: `linear-gradient(to top, transparent, ${color})`,
+                    boxShadow: `0 0 8px ${color}`,
+                  }}
+                />
+              );
+            })}
+          </motion.div>
+        ))}
 
         {endDate ? (
           <motion.div
@@ -96,10 +234,10 @@ export default function CountdownSection() {
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
               transition={{ delay: 0.3, type: "spring" }}
-              className="inline-flex items-center gap-2 bg-red-50 border border-red-200 rounded-full px-4 py-2 mb-6"
+              className="inline-flex items-center gap-2 bg-red-900/30 border border-red-500/50 rounded-full px-4 py-2 mb-6 backdrop-blur-sm"
             >
-              <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
-              <span className="text-sm font-medium text-red-600 uppercase tracking-wider">
+              <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" style={{ boxShadow: '0 0 10px rgba(239, 68, 68, 0.8)' }}></div>
+              <span className="text-sm font-medium text-red-300 uppercase tracking-wider">
                 EXCLUSIVE OFFER ENDS SOON
               </span>
             </motion.div>
@@ -118,12 +256,15 @@ export default function CountdownSection() {
                   initial={{ opacity: 0, scale: 0.5 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ delay: i * 0.1 + 0.5 }}
-                  className="bg-white border border-gray-200 backdrop-blur-sm px-6 py-8 rounded-xl shadow-lg min-w-[120px]"
+                  className="bg-gradient-to-b from-gray-900 to-black border border-gray-700 backdrop-blur-sm px-6 py-8 rounded-xl shadow-2xl min-w-[120px]"
+                  style={{
+                    boxShadow: '0 0 20px rgba(255, 255, 255, 0.05), inset 0 0 20px rgba(255, 255, 255, 0.02)',
+                  }}
                 >
-                  <div className="text-5xl md:text-6xl font-mono font-black text-gray-900 mb-2">
+                  <div className="text-5xl md:text-6xl font-mono font-black text-white mb-2">
                     {item.value}
                   </div>
-                  <div className="text-sm uppercase tracking-widest text-gray-600 font-medium">
+                  <div className="text-sm uppercase tracking-widest text-gray-400 font-medium">
                     {item.label}
                   </div>
                 </motion.div>
@@ -145,7 +286,7 @@ export default function CountdownSection() {
               Book Now
             </motion.button>
 
-            <p className="mt-4 text-sm text-gray-600">
+            <p className="mt-4 text-sm text-gray-400">
               Secure your spot • No hidden charges • Instant confirmation
             </p>
           </motion.div>
@@ -156,16 +297,16 @@ export default function CountdownSection() {
             transition={{ duration: 0.8 }}
             className="max-w-3xl mx-auto px-6"
           >
-            <h2 className="text-4xl md:text-6xl font-bold tracking-tight uppercase text-gray-900 mb-4">
+            <h2 className="text-4xl md:text-6xl font-bold tracking-tight uppercase text-white mb-4">
               EXCITING OFFERS
             </h2>
-            <h3 className="text-2xl md:text-3xl font-light text-red-600 mb-6">
+            <h3 className="text-2xl md:text-3xl font-light text-red-400 mb-6">
               Coming Soon
             </h3>
-            <p className="text-xl text-gray-700 mb-8">
+            <p className="text-xl text-gray-300 mb-8">
               Be the first to know about our exclusive Toyota deals and premium offers
             </p>
-            
+
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}

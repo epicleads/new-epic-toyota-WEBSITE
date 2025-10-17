@@ -35,6 +35,11 @@ const Header = () => {
 
   // Smooth scroll to section
   const scrollToSection = useCallback((href: string) => {
+    // Update URL hash
+    if (typeof window !== 'undefined') {
+      window.history.pushState(null, '', href);
+    }
+
     const element = document.querySelector(href);
     if (element) {
       element.scrollIntoView({
@@ -111,6 +116,9 @@ const Header = () => {
 
   if (!mounted) return null;
 
+  // Calculate if we should use glassmorphism (top 50% of viewport)
+  const isAtTop = scrollY < window.innerHeight * 0.5;
+
   return (
     <>
     <motion.header
@@ -127,24 +135,21 @@ const Header = () => {
         stiffness: 300,
         damping: 30
       }}
-      className="fixed top-0 left-0 w-full z-[10000] epic-header"
+      className="fixed top-0 left-0 w-full z-[10000] epic-header transition-all duration-500"
       style={{
-        background: 'rgba(255, 255, 255, 0.98)',
-        borderBottom: '1px solid rgba(0, 0, 0, 0.08)',
-        boxShadow: '0 2px 20px rgba(0, 0, 0, 0.06)',
+        background: isAtTop
+          ? 'transparent'
+          : 'rgba(255, 255, 255, 0.98)',
+        borderBottom: isAtTop
+          ? 'none'
+          : '1px solid rgba(0, 0, 0, 0.08)',
+        boxShadow: isAtTop
+          ? 'none'
+          : '0 2px 20px rgba(0, 0, 0, 0.06)',
         willChange: 'transform, opacity',
         transform: 'translateZ(0)'
       }}
     >
-      {/* Subtle Accent Line */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div
-          className="absolute bottom-0 left-0 w-full h-[2px]"
-          style={{
-            background: 'linear-gradient(90deg, transparent 0%, rgba(220, 38, 28, 0.3) 50%, transparent 100%)'
-          }}
-        />
-      </div>
 
       {/* Header Content with Perfect Alignment */}
       <div className="relative z-10 flex items-center justify-between w-full px-0 lg:px-8 py-2.5">
@@ -201,12 +206,12 @@ const Header = () => {
                 <div className="relative z-10">
                   <span
                     className={`
-                      font-semibold text-sm tracking-wide transition-all duration-300 whitespace-nowrap px-4 py-2
+                      font-semibold text-sm tracking-wide transition-all duration-500 whitespace-nowrap px-4 py-2
                       ${isNavItemActive(item.sectionId)
-                        ? 'text-red-600 font-bold'
+                        ? isAtTop ? 'text-white font-bold drop-shadow-lg' : 'text-red-600 font-bold'
                         : hoveredItem === item.title
-                        ? 'text-red-500'
-                        : 'text-gray-700 group-hover:text-gray-900'
+                        ? isAtTop ? 'text-white drop-shadow-lg' : 'text-red-500'
+                        : isAtTop ? 'text-white/90 group-hover:text-white drop-shadow-md' : 'text-gray-700 group-hover:text-gray-900'
                       }
                     `}
                   >
@@ -216,9 +221,9 @@ const Header = () => {
 
                 {/* Active/Hover Bottom Accent */}
                 <motion.div
-                  className="absolute bottom-0 left-1/2 transform -translate-x-1/2 h-[2px] rounded-full"
+                  className="absolute bottom-0 left-1/2 transform -translate-x-1/2 h-[2px] rounded-full transition-all duration-500"
                   style={{
-                    background: 'rgba(220, 38, 28, 1)'
+                    background: isAtTop ? 'rgba(255, 255, 255, 0.9)' : 'rgba(220, 38, 28, 1)'
                   }}
                   initial={{ width: '0%' }}
                   animate={{
@@ -250,34 +255,44 @@ const Header = () => {
                 console.log('Button clicked!');
                 setShowLeadForm(true);
               }}
-              className="relative overflow-hidden px-8 py-3 rounded-full font-bold text-sm tracking-wide transition-all duration-300 group hidden lg:block"
+              className="relative overflow-hidden px-8 py-3 rounded-full font-bold text-sm tracking-wide transition-all duration-500 group hidden lg:block"
               style={{
-                background: 'rgba(220, 38, 28, 1)',
+                background: isAtTop
+                  ? 'transparent'
+                  : 'rgba(220, 38, 28, 1)',
                 color: 'white',
-                boxShadow: '0 4px 12px rgba(220, 38, 28, 0.25)'
+                boxShadow: isAtTop
+                  ? 'none'
+                  : '0 4px 12px rgba(220, 38, 28, 0.25)',
+                border: isAtTop ? '2px solid rgba(255, 255, 255, 0.9)' : 'none'
               }}
             >
-              <span className="relative z-10 whitespace-nowrap">Book Test Drive</span>
+              <span className="relative z-10 whitespace-nowrap drop-shadow-lg">Book Test Drive</span>
             </button>
             <button
               onClick={() => {
                 console.log('Button clicked!');
                 setShowLeadForm(true);
               }}
-              className="relative overflow-hidden px-4 py-2 rounded-full font-bold text-xs tracking-wide transition-all duration-300 group lg:hidden"
+              className="relative overflow-hidden px-4 py-2 rounded-full font-bold text-xs tracking-wide transition-all duration-500 group lg:hidden"
               style={{
-                background: 'rgba(220, 38, 28, 1)',
+                background: isAtTop
+                  ? 'transparent'
+                  : 'rgba(220, 38, 28, 1)',
                 color: 'white',
-                boxShadow: '0 4px 12px rgba(220, 38, 28, 0.25)'
+                boxShadow: isAtTop
+                  ? 'none'
+                  : '0 4px 12px rgba(220, 38, 28, 0.25)',
+                border: isAtTop ? '2px solid rgba(255, 255, 255, 0.9)' : 'none'
               }}
             >
-              <span className="relative z-10 whitespace-nowrap">Book Test Drive</span>
+              <span className="relative z-10 whitespace-nowrap drop-shadow-lg">Book Test Drive</span>
             </button>
           </motion.div>
 
           {/* Mobile Menu Button */}
           <motion.button
-            className="lg:hidden p-2 relative group transition-all duration-300 rounded-lg border border-gray-200"
+            className="lg:hidden p-2 relative group transition-all duration-500 rounded-lg"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             whileHover={{
               scale: 1.05,
@@ -288,7 +303,12 @@ const Header = () => {
               transition: { duration: 0.1 }
             }}
             style={{
-              background: 'rgba(249, 250, 251, 1)'
+              background: isAtTop
+                ? 'transparent'
+                : 'rgba(249, 250, 251, 1)',
+              border: isAtTop
+                ? '1px solid rgba(255, 255, 255, 0.9)'
+                : '1px solid rgba(229, 231, 235, 1)'
             }}
           >
             <motion.div
@@ -297,9 +317,15 @@ const Header = () => {
               className="relative z-10"
             >
               {isMobileMenuOpen ? (
-                <X className="w-5 h-5 text-red-600" />
+                <X className={`w-5 h-5 transition-colors duration-500 ${
+                  isAtTop ? 'text-white' : 'text-red-600'
+                }`} />
               ) : (
-                <Menu className="w-5 h-5 text-gray-700 group-hover:text-red-600 transition-colors duration-300" />
+                <Menu className={`w-5 h-5 transition-colors duration-500 ${
+                  isAtTop
+                    ? 'text-white group-hover:text-white/80'
+                    : 'text-gray-700 group-hover:text-red-600'
+                }`} />
               )}
             </motion.div>
           </motion.button>

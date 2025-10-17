@@ -78,13 +78,20 @@ export default function LeadForm({
   return (
     <form
       onSubmit={handleSubmit}
-      className="bg-white border border-gray-200 rounded-2xl shadow-lg p-6 md:p-8 text-left w-full max-w-lg mx-auto"
+      className="rounded-2xl shadow-2xl p-6 md:p-8 text-left w-full max-w-lg mx-auto"
+      style={{
+        background: 'rgba(255, 255, 255, 0.1)',
+        backdropFilter: 'blur(20px) saturate(180%)',
+        WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+        border: '1px solid rgba(255, 255, 255, 0.2)',
+        boxShadow: '0 8px 32px rgba(0, 0, 0, 0.2)'
+      }}
     >
       {/* Customer Name */}
       <div className="mb-5">
         <label
           htmlFor="customer_name"
-          className="block text-sm font-semibold text-gray-700 mb-2"
+          className="block text-sm font-semibold text-white mb-2"
         >
           Customer Name
         </label>
@@ -95,7 +102,13 @@ export default function LeadForm({
           value={formData.customer_name}
           onChange={handleChange}
           required
-          className="w-full rounded-lg bg-gray-50 border border-gray-300 text-gray-900 px-4 py-3 focus:outline-none focus:ring-1 focus:ring-red-500 focus:border-red-500 transition"
+          className="w-full rounded-lg text-white px-4 py-3 focus:outline-none focus:ring-2 focus:ring-red-500 transition placeholder-white/60"
+          style={{
+            background: 'rgba(255, 255, 255, 0.1)',
+            backdropFilter: 'blur(10px)',
+            WebkitBackdropFilter: 'blur(10px)',
+            border: '1px solid rgba(255, 255, 255, 0.3)'
+          }}
           placeholder="Enter your name"
         />
       </div>
@@ -104,7 +117,7 @@ export default function LeadForm({
       <div className="mb-5">
         <label
           htmlFor="customer_mobile_number"
-          className="block text-sm font-semibold text-gray-700 mb-2"
+          className="block text-sm font-semibold text-white mb-2"
         >
           Mobile Number
         </label>
@@ -116,7 +129,13 @@ export default function LeadForm({
           onChange={handleChange}
           required
           pattern="[0-9]{10}"
-          className="w-full rounded-lg bg-gray-50 border border-gray-300 text-gray-900 px-4 py-3 focus:outline-none focus:ring-1 focus:ring-red-500 focus:border-red-500 transition"
+          className="w-full rounded-lg text-white px-4 py-3 focus:outline-none focus:ring-2 focus:ring-red-500 transition placeholder-white/60"
+          style={{
+            background: 'rgba(255, 255, 255, 0.1)',
+            backdropFilter: 'blur(10px)',
+            WebkitBackdropFilter: 'blur(10px)',
+            border: '1px solid rgba(255, 255, 255, 0.3)'
+          }}
           placeholder="Enter 10-digit mobile number"
         />
       </div>
@@ -125,7 +144,7 @@ export default function LeadForm({
       <div className="mb-6">
         <label
           htmlFor="model_interested"
-          className="block text-sm font-semibold text-gray-700 mb-2"
+          className="block text-sm font-semibold text-white mb-2"
         >
           Model Interested
         </label>
@@ -135,21 +154,27 @@ export default function LeadForm({
           value={formData.model_interested}
           onChange={handleChange}
           required
-          className="w-full rounded-lg bg-gray-50 border border-gray-300 text-gray-900 px-4 py-3 focus:outline-none focus:ring-1 focus:ring-red-500 focus:border-red-500 transition"
+          className="w-full rounded-lg text-white px-4 py-3 focus:outline-none focus:ring-2 focus:ring-red-500 transition"
+          style={{
+            background: 'rgba(255, 255, 255, 0.1)',
+            backdropFilter: 'blur(10px)',
+            WebkitBackdropFilter: 'blur(10px)',
+            border: '1px solid rgba(255, 255, 255, 0.3)'
+          }}
         >
-          <option value="">Select a model</option>
-          <option value="Glanza">Glanza</option>
-          <option value="Urban Cruiser Taisor">Urban Cruiser Taisor</option>
-          <option value="Urban Cruiser Hyryder">Urban Cruiser Hyryder</option>
-          <option value="Rumion">Rumion</option>
-          <option value="Innova Hycross">Innova Hycross</option>
-          <option value="Innova Crysta">Innova Crysta</option>
-          <option value="Fortuner">Fortuner</option>
-          <option value="Hilux">Hilux</option>
-          <option value="Camry">Camry</option>
-          <option value="Vellfire">Vellfire</option>
-          <option value="Land Cruiser">Land Cruiser</option>
-          <option value="Other">Other</option>
+          <option value="" className="bg-gray-900 text-white">Select a model</option>
+          <option value="Glanza" className="bg-gray-900 text-white">Glanza</option>
+          <option value="Urban Cruiser Taisor" className="bg-gray-900 text-white">Urban Cruiser Taisor</option>
+          <option value="Urban Cruiser Hyryder" className="bg-gray-900 text-white">Urban Cruiser Hyryder</option>
+          <option value="Rumion" className="bg-gray-900 text-white">Rumion</option>
+          <option value="Innova Hycross" className="bg-gray-900 text-white">Innova Hycross</option>
+          <option value="Innova Crysta" className="bg-gray-900 text-white">Innova Crysta</option>
+          <option value="Fortuner" className="bg-gray-900 text-white">Fortuner</option>
+          <option value="Hilux" className="bg-gray-900 text-white">Hilux</option>
+          <option value="Camry" className="bg-gray-900 text-white">Camry</option>
+          <option value="Vellfire" className="bg-gray-900 text-white">Vellfire</option>
+          <option value="Land Cruiser" className="bg-gray-900 text-white">Land Cruiser</option>
+          <option value="Other" className="bg-gray-900 text-white">Other</option>
         </select>
       </div>
 
@@ -157,19 +182,25 @@ export default function LeadForm({
       <button
         type="submit"
         disabled={loading}
-        className="w-full bg-red-600 hover:bg-red-500 disabled:bg-red-400 text-white font-bold py-3 md:py-4 rounded-lg uppercase tracking-wide transition-all shadow-md hover:shadow-lg"
+        className="w-full text-white font-bold py-3 md:py-4 rounded-lg uppercase tracking-wide transition-all shadow-lg hover:shadow-xl disabled:opacity-50"
+        style={{
+          background: loading ? 'rgba(220, 38, 28, 0.5)' : 'rgba(220, 38, 28, 0.8)',
+          backdropFilter: 'blur(10px)',
+          WebkitBackdropFilter: 'blur(10px)',
+          border: '1px solid rgba(220, 38, 28, 0.5)'
+        }}
       >
         {loading ? "Submitting..." : buttonLabel}
       </button>
 
       {/* Success / Error Messages */}
       {submitted && (
-        <p className="mt-4 text-green-600 text-sm">
+        <p className="mt-4 text-green-400 text-sm font-semibold">
           ✅ Thank you! We'll get back to you shortly.
         </p>
       )}
       {errorMsg && (
-        <p className="mt-4 text-red-600 text-sm">⚠ {errorMsg}</p>
+        <p className="mt-4 text-red-400 text-sm font-semibold">⚠ {errorMsg}</p>
       )}
     </form>
   );

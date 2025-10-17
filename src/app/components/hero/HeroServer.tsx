@@ -83,29 +83,66 @@ async function getActiveBanner(): Promise<Banner | null> {
 
 export default async function HeroServer() {
   const activeBanner = await getActiveBanner();
-  
-  // Default banner configuration
-  const defaultBanner = {
-    desktop_image: '/assets/epictoyotahero.jpg',
-    mobile_image: '/assets/epictoyotahero.jpg',
-    cta_text: 'Book Now',
-    cta_link: '/vehicles',
-    
-  };
+
+  // Multiple default banner configurations
+  const defaultBanners = [
+    {
+      id: 1,
+      desktop_image: '/assets/d1.jpg',
+      mobile_image: '/assets/m1.jpg',
+      cta_text: 'Book Now',
+      cta_link: '/vehicles',
+    },
+    {
+      id: 2,
+      desktop_image: '/assets/d2.jpg',
+      mobile_image: '/assets/m2.jpg',
+      cta_text: 'Book Now',
+      cta_link: '/vehicles',
+    },
+    {
+      id: 3,
+      desktop_image: '/assets/d3.jpg',
+      mobile_image: '/assets/m3.jpg',
+      cta_text: 'Book Now',
+      cta_link: '/vehicles',
+    },
+    {
+      id: 4,
+      desktop_image: '/assets/d4.jpg',
+      mobile_image: '/assets/m4.jpg',
+      cta_text: 'Book Now',
+      cta_link: '/vehicles',
+    },
+    {
+      id: 5,
+      desktop_image: '/assets/d5.jpg',
+      mobile_image: '/assets/m5.jpg',
+      cta_text: 'Book Now',
+      cta_link: '/vehicles',
+    },
+  ];
 
   // Prepare banner data for client component
   const bannerData = activeBanner ? {
-    desktop_image: activeBanner.desktop_banner_url || activeBanner.banner_url || defaultBanner.desktop_image,
-    mobile_image: activeBanner.mobile_banner_url || activeBanner.banner_url || defaultBanner.mobile_image,
+    desktop_image: activeBanner.desktop_banner_url || activeBanner.banner_url || defaultBanners[0].desktop_image,
+    mobile_image: activeBanner.mobile_banner_url || activeBanner.banner_url || defaultBanners[0].mobile_image,
     cta_text: activeBanner.cta_text,
     cta_link: activeBanner.cta_link,
     isFromBackend: true,
+    banners: [
+      {
+        desktop_image: activeBanner.desktop_banner_url || activeBanner.banner_url || defaultBanners[0].desktop_image,
+        mobile_image: activeBanner.mobile_banner_url || activeBanner.banner_url || defaultBanners[0].mobile_image,
+      }
+    ],
   } : {
-    desktop_image: defaultBanner.desktop_image,
-    mobile_image: defaultBanner.mobile_image,
-    cta_text: defaultBanner.cta_text,
-    cta_link: defaultBanner.cta_link,
+    desktop_image: defaultBanners[0].desktop_image,
+    mobile_image: defaultBanners[0].mobile_image,
+    cta_text: defaultBanners[0].cta_text,
+    cta_link: defaultBanners[0].cta_link,
     isFromBackend: false,
+    banners: defaultBanners,
   };
 
 

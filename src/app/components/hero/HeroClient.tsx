@@ -7,6 +7,12 @@ import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 import LeadForm from '../LeadForm';
 
+interface BannerItem {
+  desktop_image: string;
+  mobile_image: string;
+  id?: number;
+}
+
 interface BannerData {
   desktop_image: string;
   mobile_image: string;
@@ -15,6 +21,7 @@ interface BannerData {
   title?: string;
   subtitle?: string;
   isFromBackend: boolean;
+  banners?: BannerItem[];
 }
 
 interface HeroClientProps {
@@ -26,6 +33,11 @@ export default function HeroClient({ bannerData }: HeroClientProps) {
   const [isMobile, setIsMobile] = useState(false);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [showLeadForm, setShowLeadForm] = useState(false);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
+  const banners = bannerData.banners || [
+    { desktop_image: bannerData.desktop_image, mobile_image: bannerData.mobile_image }
+  ];
 
 
   useEffect(() => {
@@ -51,22 +63,23 @@ export default function HeroClient({ bannerData }: HeroClientProps) {
     return () => window.removeEventListener('mousemove', handleMouseMove);
   }, []);
 
-  const currentImage = isMobile ? bannerData.mobile_image : bannerData.desktop_image;
+  // Auto-advance carousel for multiple images
+  useEffect(() => {
+    if (banners.length > 1) {
+      const interval = setInterval(() => {
+        setCurrentImageIndex((prev) => (prev + 1) % banners.length);
+        setIsLoaded(false); // Reset load state for smooth transition
+      }, 5000); // Change image every 5 seconds
+
+      return () => clearInterval(interval);
+    }
+  }, [banners.length]);
+
+  const currentBanner = banners[currentImageIndex];
+  const currentImage = isMobile ? currentBanner.mobile_image : currentBanner.desktop_image;
 
   return (
-    <section className="relative h-screen overflow-hidden bg-white pt-16">
-     
-
-      {/* Rest of your component remains the same... */}
-      <div 
-        className="absolute inset-0 opacity-30 transition-all duration-1000 ease-out"
-        style={{
-          background: `radial-gradient(circle at ${mousePosition.x}% ${mousePosition.y}%, 
-            rgba(220, 38, 38, 0.3) 0%, 
-            rgba(0, 0, 0, 0.8) 50%, 
-            rgba(0, 0, 0, 1) 100%)`,
-        }}
-      />
+    <section className="relative h-screen overflow-hidden bg-white">
 
       {/* Hero Banner Image */}
       <div className="absolute inset-0">
@@ -82,10 +95,6 @@ export default function HeroClient({ bannerData }: HeroClientProps) {
           priority
           sizes="100vw"
         />
-        
-        {/* Premium Overlay Gradients */}
-        <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-transparent to-black/40" />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/20" />
       </div>
 
      
@@ -122,8 +131,29 @@ export default function HeroClient({ bannerData }: HeroClientProps) {
         </div>
       )}
 
+      {/* Carousel Indicators - Only show if multiple banners (hidden on mobile) */}
+      {banners.length > 1 && (
+        <div className="absolute bottom-24 left-1/2 transform -translate-x-1/2 z-20 hidden md:flex gap-2">
+          {banners.map((_, index) => (
+            <button
+              key={index}
+              onClick={() => {
+                setCurrentImageIndex(index);
+                setIsLoaded(false);
+              }}
+              className={`w-3 h-3 rounded-full transition-all duration-300 ${
+                index === currentImageIndex
+                  ? 'bg-red-600 w-8'
+                  : 'bg-white/50 hover:bg-white/80'
+              }`}
+              aria-label={`Go to slide ${index + 1}`}
+            />
+          ))}
+        </div>
+      )}
+
       {/* CTA Button - Positioned at bottom */}
-      <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-20">
+      <div className="absolute bottom-4 md:bottom-8 left-1/2 transform -translate-x-1/2 z-20">
         <div className={`transition-all duration-1000 delay-500 ${
           isLoaded ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'
         }`}>

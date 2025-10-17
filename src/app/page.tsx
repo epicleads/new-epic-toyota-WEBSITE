@@ -302,21 +302,25 @@ export default function HomePage() {
           <AboutSection />
         </section>
 
+        <section id="models">
+          <ToyotaFeaturedModels />
+        </section>
+
         <section id="services">
           <ServicesSection />
+        </section>
+
+         <section id="why-choose">
+          <WhyBuySection />
         </section>
 
         <section id="testimonials">
           <TestimonialsSection />
         </section>
 
-        <section id="models">
-          <ToyotaFeaturedModels />
-        </section>
+        
 
-        <section id="why-choose">
-          <WhyBuySection />
-        </section>
+       
 
         <section id="locations">
           <LocationsSection />
