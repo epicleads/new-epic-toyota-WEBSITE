@@ -89,7 +89,16 @@ export default function Footer() {
               </a>
               <div className="flex items-start gap-2 sm:gap-3 text-xs sm:text-sm">
                 <MapPin className="w-4 h-4 mt-0.5 flex-shrink-0 text-red-500" />
-                <span className="text-gray-400">Chennai, Tamil Nadu</span>
+                <div className="text-gray-400 space-y-1">
+                  <div>Building No./Flat No.: Anna Salai</div>
+                  <div>Name Of Premises/Building: Anna Salai</div>
+                  <div>Road/Street: 9 & 35</div>
+                  <div>Locality/Sub Locality: Anna Salai</div>
+                  <div>City/Town/Village: Chennai</div>
+                  <div>District: Chennai</div>
+                  <div>State: Tamil Nadu</div>
+                  <div>Pincode: 600002</div>
+                </div>
               </div>
             </div>
           </div>
