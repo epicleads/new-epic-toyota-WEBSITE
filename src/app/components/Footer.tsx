@@ -1,9 +1,16 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { Facebook, Instagram, Youtube, Phone, Mail, MapPin } from "lucide-react";
 import Image from "next/image";
 
 export default function Footer() {
+  const [year, setYear] = useState(2025);
+
+  useEffect(() => {
+    setYear(new Date().getFullYear());
+  }, []);
+
   return (
     <footer className="w-full bg-gradient-to-b from-gray-900 to-black text-gray-300 relative overflow-hidden">
       {/* Premium gradient overlay */}
@@ -134,13 +141,33 @@ export default function Footer() {
         <div className="border-t border-gray-800/50 mb-4 sm:mb-6"></div>
 
         {/* Bottom Section - Legal & Copyright */}
-        <div className="text-center text-xs text-gray-500 space-y-1.5 sm:space-y-2">
-          <p>
-            © {new Date().getFullYear()} <span className="text-gray-400 font-medium">EPIC Motors India Private Limited</span>. All Rights Reserved.
-          </p>
-          <p className="text-gray-600">
-            Authorized Toyota Dealer | Part of Raam Group
-          </p>
+        <div className="text-center space-y-3 sm:space-y-4">
+          {/* Legal Links */}
+          <div className="flex flex-wrap justify-center items-center gap-2 sm:gap-4 text-xs text-gray-400">
+            <a
+              href="/privacy-policy"
+              className="hover:text-red-500 transition-colors duration-300 underline-offset-4 hover:underline"
+            >
+              Privacy Policy
+            </a>
+            <span className="text-gray-700">|</span>
+            <a
+              href="/terms-and-conditions"
+              className="hover:text-red-500 transition-colors duration-300 underline-offset-4 hover:underline"
+            >
+              Terms & Conditions
+            </a>
+          </div>
+
+          {/* Copyright */}
+          <div className="text-xs text-gray-500 space-y-1.5 sm:space-y-2">
+            <p>
+              © {year} <span className="text-gray-400 font-medium">EPIC Motors India Private Limited</span>. All Rights Reserved.
+            </p>
+            <p className="text-gray-600">
+              Authorized Toyota Dealer | Part of Raam Group
+            </p>
+          </div>
         </div>
       </div>
     </footer>

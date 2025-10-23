@@ -144,26 +144,7 @@ export default function HeroClient({ bannerData }: HeroClientProps) {
         </div>
       )}
 
-      {/* Carousel Indicators - Only show if multiple banners (hidden on mobile) */}
-      {banners.length > 1 && (
-        <div className="absolute bottom-24 left-1/2 transform -translate-x-1/2 z-20 hidden md:flex gap-2">
-          {banners.map((_, index) => (
-            <button
-              key={index}
-              onClick={() => {
-                setCurrentImageIndex(index);
-                setIsLoaded(false);
-              }}
-              className={`w-3 h-3 rounded-full transition-all duration-300 ${
-                index === currentImageIndex
-                  ? 'bg-red-600 w-8'
-                  : 'bg-white/50 hover:bg-white/80'
-              }`}
-              aria-label={`Go to slide ${index + 1}`}
-            />
-          ))}
-        </div>
-      )}
+      
 
       {/* CTA Button - Positioned at bottom */}
       <div className="absolute bottom-4 md:bottom-8 left-1/2 transform -translate-x-1/2 z-20">
