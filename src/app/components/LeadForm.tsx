@@ -1,6 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
+
+// Extend Window interface to include gtag
+declare global {
+  interface Window {
+    gtag?: (
+      command: 'config' | 'event' | 'js' | 'set',
+      targetId: string | Date,
+      config?: Record<string, unknown>
+    ) => void;
+  }
+}
 
 type LeadFormProps = {
   buttonLabel?: string;
@@ -20,6 +31,41 @@ export default function LeadForm({
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+  const originalUrlRef = useRef<string>('');
+
+  // URL tracking for marketing analytics
+  const updateURL = useCallback((testdriveState: string | null) => {
+    if (typeof window === 'undefined') return;
+    
+    const url = new URL(window.location.href);
+    
+    if (testdriveState) {
+      url.searchParams.set('testdrive', testdriveState);
+    } else {
+      url.searchParams.delete('testdrive');
+    }
+    
+    window.history.replaceState({}, '', url.toString());
+  }, []);
+
+  // Track URL on component mount
+  useEffect(() => {
+    // Store original URL
+    originalUrlRef.current = window.location.href;
+    
+    // Update URL to include testdrive=true for tracking
+    updateURL('true');
+
+    return () => {
+      // Restore original URL ONLY if form was NOT submitted successfully
+      const hasSubmitted = submitted ||
+        (typeof window !== 'undefined' && localStorage.getItem('testdrive_submitted') === 'true');
+
+      if (originalUrlRef.current && !hasSubmitted && !originalUrlRef.current.includes('testdrive=thankyou')) {
+        window.history.replaceState({}, '', originalUrlRef.current);
+      }
+    };
+  }, [updateURL, submitted]);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -53,6 +99,30 @@ export default function LeadForm({
       const data = await res.json();
 
       if (res.ok) {
+        // Update URL to thankyou state for tracking
+        updateURL('thankyou');
+
+        // 🎯 IMMEDIATE GA Pageview Tracking for Thank You (Multi-layer tracking)
+        // Send pageview immediately even if user closes browser/navigates away
+        if (typeof window !== 'undefined' && window.gtag) {
+          window.gtag('event', 'page_view', {
+            page_location: window.location.href,
+            page_path: window.location.pathname + '?testdrive=thankyou',
+            page_title: 'Test Drive - Thank You'
+          });
+
+          console.log('🎯 GA4 Pageview Tracked:', {
+            event: 'page_view',
+            path: '?testdrive=thankyou'
+          });
+        }
+
+        // Save submission status to localStorage for auto-popup tracking
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('testdrive_submitted', 'true');
+          localStorage.setItem('testdrive_submitted_at', new Date().toISOString());
+        }
+
         setSubmitted(true);
         setFormData({ customer_name: "", customer_mobile_number: "", model_interested: "" });
         if (onSuccess) {

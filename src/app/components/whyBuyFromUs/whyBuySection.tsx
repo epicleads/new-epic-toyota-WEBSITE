@@ -18,7 +18,7 @@ export default function WhyBuySection() {
     {
       title: "Multiple Outlets",
       description:
-        "With 6+ outlets across Hyderabad, Epic Toyota is always nearby for sales, service, and support.",
+        "With 4 outlets across chennai, Epic Toyota is always nearby for sales, service, and support.",
       icon: MapPin,
     },
     {
