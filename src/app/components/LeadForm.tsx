@@ -2,17 +2,6 @@
 
 import { useState, useRef, useCallback, useEffect } from "react";
 
-// Extend Window interface to include gtag
-declare global {
-  interface Window {
-    gtag?: (
-      command: 'config' | 'event' | 'js' | 'set',
-      targetId: string | Date,
-      config?: Record<string, unknown>
-    ) => void;
-  }
-}
-
 type LeadFormProps = {
   buttonLabel?: string;
   onSuccess?: () => void;
@@ -145,8 +134,44 @@ export default function LeadForm({
     }
   };
 
+  // Show thank you message if submitted
+  if (submitted) {
+    return (
+      <div
+        className="rounded-2xl shadow-2xl p-6 md:p-8 text-center w-full max-w-lg mx-auto"
+        style={{
+          background: 'rgba(255, 255, 255, 0.1)',
+          backdropFilter: 'blur(20px) saturate(180%)',
+          WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+          border: '1px solid rgba(34, 197, 94, 0.3)',
+          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.2)'
+        }}
+      >
+        <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-6">
+          <div className="text-white text-3xl font-bold">✓</div>
+        </div>
+        <h3 className="text-2xl font-bold text-white mb-3">Thank You!</h3>
+        <p className="text-gray-200 mb-6 text-lg">
+          Your request has been submitted successfully. Our team will contact you soon.
+        </p>
+        <button
+          onClick={() => setSubmitted(false)}
+          className="text-white font-semibold py-3 px-6 rounded-lg transition-all"
+          style={{
+            background: 'rgba(255, 255, 255, 0.2)',
+            backdropFilter: 'blur(10px)',
+            border: '1px solid rgba(255, 255, 255, 0.3)'
+          }}
+        >
+          Submit Another Request
+        </button>
+      </div>
+    );
+  }
+
   return (
     <form
+      id="toyota-lead-form"
       onSubmit={handleSubmit}
       className="rounded-2xl shadow-2xl p-6 md:p-8 text-left w-full max-w-lg mx-auto"
       style={{
@@ -250,6 +275,7 @@ export default function LeadForm({
 
       {/* CTA Button */}
       <button
+        id="toyota-lead-form-submit"
         type="submit"
         disabled={loading}
         className="w-full text-white font-bold py-3 md:py-4 rounded-lg uppercase tracking-wide transition-all shadow-lg hover:shadow-xl disabled:opacity-50"
@@ -263,12 +289,7 @@ export default function LeadForm({
         {loading ? "Submitting..." : buttonLabel}
       </button>
 
-      {/* Success / Error Messages */}
-      {submitted && (
-        <p className="mt-4 text-green-400 text-sm font-semibold">
-          ✅ Thank you! We'll get back to you shortly.
-        </p>
-      )}
+      {/* Error Messages */}
       {errorMsg && (
         <p className="mt-4 text-red-400 text-sm font-semibold">⚠ {errorMsg}</p>
       )}

@@ -58,8 +58,30 @@ export default function ContactForm({
     }
   };
 
+  // Show thank you message if submitted
+  if (submitted) {
+    return (
+      <div className="bg-white border border-green-200 rounded-2xl shadow-lg p-6 md:p-8 text-center w-full max-w-lg mx-auto">
+        <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-6">
+          <div className="text-white text-3xl font-bold">✓</div>
+        </div>
+        <h3 className="text-2xl font-bold text-gray-900 mb-3">Thank You!</h3>
+        <p className="text-gray-600 mb-6 text-lg">
+          Your inquiry has been submitted successfully. Our team will contact you soon.
+        </p>
+        <button
+          onClick={() => setSubmitted(false)}
+          className="bg-red-600 hover:bg-red-700 text-white font-semibold py-3 px-6 rounded-lg transition-all"
+        >
+          Submit Another Inquiry
+        </button>
+      </div>
+    );
+  }
+
   return (
     <form
+      id="toyota-contact-form"
       onSubmit={handleSubmit}
       className="bg-white border border-gray-200 rounded-2xl shadow-lg p-6 md:p-8 text-left w-full max-w-lg mx-auto"
     >
@@ -129,6 +151,7 @@ export default function ContactForm({
 
       {/* CTA Button */}
       <button
+        id="toyota-contact-form-submit"
         type="submit"
         disabled={loading}
         className="w-full bg-red-600 hover:bg-red-500 disabled:bg-red-400 text-white font-bold py-3 md:py-4 rounded-lg uppercase tracking-wide transition-all shadow-md hover:shadow-lg"
@@ -136,12 +159,7 @@ export default function ContactForm({
         {loading ? "Submitting..." : buttonLabel}
       </button>
 
-      {/* Success / Error Messages */}
-      {submitted && (
-        <p className="mt-4 text-green-400 text-sm">
-          ✅ Thank you! We’ll get back to you shortly.
-        </p>
-      )}
+      {/* Error Messages */}
       {errorMsg && (
         <p className="mt-4 text-red-400 text-sm">⚠ {errorMsg}</p>
       )}
