@@ -1,10 +1,10 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { createPortal } from 'react-dom';
-import { X } from 'lucide-react';
+import { X, ChevronLeft, ChevronRight } from 'lucide-react';
 import LeadForm from '../LeadForm';
 
 interface BannerItem {
@@ -39,6 +39,8 @@ export default function HeroClient({ bannerData }: HeroClientProps) {
     { desktop_image: bannerData.desktop_image, mobile_image: bannerData.mobile_image }
   ];
 
+  const hasMultipleBanners = banners.length > 1;
+
 
   useEffect(() => {
     const checkMobile = () => {
@@ -64,16 +66,25 @@ export default function HeroClient({ bannerData }: HeroClientProps) {
   }, []);
 
   // Auto-advance carousel for multiple images
+  const goToNextBanner = useCallback(() => {
+    setCurrentImageIndex((prev) => (prev + 1) % banners.length);
+    setIsLoaded(false);
+  }, [banners.length]);
+
+  const goToPrevBanner = useCallback(() => {
+    setCurrentImageIndex((prev) => (prev - 1 + banners.length) % banners.length);
+    setIsLoaded(false);
+  }, [banners.length]);
+
   useEffect(() => {
-    if (banners.length > 1) {
+    if (hasMultipleBanners) {
       const interval = setInterval(() => {
-        setCurrentImageIndex((prev) => (prev + 1) % banners.length);
-        setIsLoaded(false); // Reset load state for smooth transition
+        goToNextBanner();
       }, 5000); // Change image every 5 seconds
 
       return () => clearInterval(interval);
     }
-  }, [banners.length]);
+  }, [hasMultipleBanners, goToNextBanner]);
 
   const currentBanner = banners[currentImageIndex];
   const currentImage = isMobile ? currentBanner.mobile_image : currentBanner.desktop_image;
@@ -109,6 +120,48 @@ export default function HeroClient({ bannerData }: HeroClientProps) {
           </motion.div>
         </AnimatePresence>
       </div>
+
+      {/* Premium manual controls */}
+      {hasMultipleBanners && (
+        <>
+          <button
+            type="button"
+            onClick={goToPrevBanner}
+            aria-label="Previous banner"
+            className="hidden md:flex absolute left-6 top-1/2 -translate-y-1/2 z-30 w-14 h-14 rounded-full bg-black/40 hover:bg-black/60 border border-white/20 backdrop-blur-md text-white items-center justify-center shadow-[0_10px_30px_rgba(0,0,0,0.35)] transition-all duration-300"
+          >
+            <ChevronLeft className="w-6 h-6" />
+          </button>
+          <button
+            type="button"
+            onClick={goToNextBanner}
+            aria-label="Next banner"
+            className="hidden md:flex absolute right-6 top-1/2 -translate-y-1/2 z-30 w-14 h-14 rounded-full bg-black/40 hover:bg-black/60 border border-white/20 backdrop-blur-md text-white items-center justify-center shadow-[0_10px_30px_rgba(0,0,0,0.35)] transition-all duration-300"
+          >
+            <ChevronRight className="w-6 h-6" />
+          </button>
+
+          {/* Mobile controls */}
+          <div className="md:hidden absolute inset-x-0 bottom-16 z-30 flex justify-between px-6">
+            <button
+              type="button"
+              onClick={goToPrevBanner}
+              aria-label="Previous banner"
+              className="w-12 h-12 rounded-full bg-black/50 border border-white/10 text-white flex items-center justify-center backdrop-blur-md shadow-lg"
+            >
+              <ChevronLeft className="w-5 h-5" />
+            </button>
+            <button
+              type="button"
+              onClick={goToNextBanner}
+              aria-label="Next banner"
+              className="w-12 h-12 rounded-full bg-black/50 border border-white/10 text-white flex items-center justify-center backdrop-blur-md shadow-lg"
+            >
+              <ChevronRight className="w-5 h-5" />
+            </button>
+          </div>
+        </>
+      )}
 
      
 
