@@ -36,7 +36,7 @@ export const metadata: Metadata = {
     "Innova Hycross Chennai", "Fortuner Chennai", "Glanza Chennai",
     "Urban Cruiser Hyryder Chennai", "Innova Crysta Chennai", "Camry Chennai",
     "Vellfire Chennai", "Hilux Chennai", "Land Cruiser Chennai",
-    "Rumion Chennai", "Taisor Chennai",
+    "Rumion Chennai", "Taisor Chennai", "Toyota Innova Hycross Chennai","toyota", "Toyota cars",
 
     // BUYING INTENT KEYWORDS
     "Buy Toyota Chennai", "New Toyota cars Chennai", "Toyota on road price Chennai",
