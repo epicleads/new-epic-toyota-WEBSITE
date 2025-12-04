@@ -18,41 +18,108 @@ export default function ContactForm({
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+  const [phoneError, setPhoneError] = useState("");
+
+  // Phone number validation: 10 digits, starting with 6, 7, 8, or 9
+  const validatePhone = (phone: string): boolean => {
+    // Remove any non-digit characters for validation
+    const digitsOnly = phone.replace(/\D/g, "");
+    
+    // Check if it's exactly 10 digits
+    if (digitsOnly.length !== 10) {
+      return false;
+    }
+    
+    // Check if it starts with 6, 7, 8, or 9
+    const firstDigit = digitsOnly[0];
+    if (!['6', '7', '8', '9'].includes(firstDigit)) {
+      return false;
+    }
+    
+    return true;
+  };
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    
+    // Special handling for phone number
+    if (name === "phone") {
+      // Only allow digits, max 10 digits
+      const digitsOnly = value.replace(/\D/g, "").slice(0, 10);
+      setFormData((prev) => ({ ...prev, [name]: digitsOnly }));
+      
+      // Real-time validation
+      if (digitsOnly.length > 0) {
+        if (digitsOnly.length < 10) {
+          setPhoneError("Phone number must be 10 digits");
+        } else if (!['6', '7', '8', '9'].includes(digitsOnly[0])) {
+          setPhoneError("Phone number must start with 6, 7, 8, or 9");
+        } else {
+          setPhoneError("");
+        }
+      } else {
+        setPhoneError("");
+      }
+    } else {
+      setFormData((prev) => ({ ...prev, [name]: value }));
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
     setErrorMsg("");
+    setPhoneError("");
+
+    // Validate phone number before submission
+    if (!validatePhone(formData.phone)) {
+      if (formData.phone.length < 10) {
+        setPhoneError("Phone number must be exactly 10 digits");
+      } else if (!['6', '7', '8', '9'].includes(formData.phone[0])) {
+        setPhoneError("Phone number must start with 6, 7, 8, or 9");
+      } else {
+        setPhoneError("Please enter a valid phone number");
+      }
+      return;
+    }
+
+    setLoading(true);
 
     try {
-      const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://raam-group-all-websites.onrender.com';
-      const res = await fetch(
-        `${API_BASE}/admin/epic-toyota/leads`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(formData),
-        }
-      );
+      // Use the same Supabase Edge Function that is already working in FinalCTA
+      const url = "https://raticwohyvxcyoqzqnwj.supabase.co/functions/v1/smart-handler";
 
-      const data = await res.json();
+      const payload = {
+        customer_name: formData.name,
+        customer_mobile_number: formData.phone,
+        model_interested: formData.service,
+      };
 
-      if (data.ok) {
-        setSubmitted(true);
-        setFormData({ name: "", phone: "", service: "" });
-      } else {
-        setErrorMsg(data.message || "Something went wrong");
+      const res = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-api-key": "df878d10-c2e4-42b6-84d5-6a70ed0041dd",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await res.json().catch(() => ({} as any));
+
+      if (!res.ok) {
+        throw new Error(data.message || "Failed to submit form. Please try again later.");
       }
+
+      setSubmitted(true);
+      setFormData({ name: "", phone: "", service: "" });
+      setPhoneError("");
+      setErrorMsg("");
     } catch (err) {
       console.error("Error submitting form:", err);
-      setErrorMsg("Failed to submit form. Please try again later.");
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to submit form. Please try again later.";
+      setErrorMsg(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -111,7 +178,7 @@ export default function ContactForm({
           htmlFor="phone"
           className="block text-sm font-semibold text-gray-700 mb-2"
         >
-          Phone Number
+          Phone Number <span className="text-red-500">*</span>
         </label>
         <input
           type="tel"
@@ -120,9 +187,26 @@ export default function ContactForm({
           value={formData.phone}
           onChange={handleChange}
           required
-          className="w-full rounded-lg bg-gray-50 border border-gray-300 text-gray-900 px-4 py-3 focus:outline-none focus:ring-1 focus:ring-red-500 focus:border-red-500 transition"
-          placeholder="Enter your phone"
+          maxLength={10}
+          pattern="[6789][0-9]{9}"
+          className={`w-full rounded-lg bg-gray-50 border ${
+            phoneError 
+              ? "border-red-500 focus:ring-red-500 focus:border-red-500" 
+              : "border-gray-300 focus:ring-red-500 focus:border-red-500"
+          } text-gray-900 px-4 py-3 focus:outline-none focus:ring-1 transition`}
+          placeholder="Enter 10-digit phone number"
         />
+        {phoneError && (
+          <p className="mt-1 text-sm text-red-500">{phoneError}</p>
+        )}
+        {!phoneError && formData.phone.length > 0 && formData.phone.length < 10 && (
+          <p className="mt-1 text-xs text-gray-500">
+            {10 - formData.phone.length} more digit{10 - formData.phone.length !== 1 ? 's' : ''} required
+          </p>
+        )}
+        {!phoneError && formData.phone.length === 10 && validatePhone(formData.phone) && (
+          <p className="mt-1 text-sm text-green-600">✓ Valid phone number</p>
+        )}
       </div>
 
       {/* Service Type */}
