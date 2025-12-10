@@ -102,125 +102,170 @@ export default function CountdownSection() {
   return (
     <>
       <section className="w-full bg-black text-white py-16 text-center relative overflow-hidden">
-        {/* Left Diya */}
-        <motion.div
-          className="absolute left-8 md:left-16 top-1/2 transform -translate-y-1/2 hidden lg:block"
-          animate={{
-            y: [0, -10, 0],
-          }}
-          transition={{
-            duration: 3,
-            repeat: Infinity,
-            ease: "easeInOut",
-          }}
-        >
-          <div className="relative">
-            {/* Flame */}
+        {/* New Year Confetti Bombs */}
+        {mounted && [...Array(5)].map((_, i) => {
+          const positions = [
+            { left: '10%', top: '20%' },
+            { left: '30%', top: '15%' },
+            { left: '50%', top: '25%' },
+            { left: '70%', top: '18%' },
+            { left: '90%', top: '22%' },
+          ];
+          const colors = ['#FFD700', '#FF1493', '#00FFFF', '#FF6B35', '#32CD32', '#FF69B4', '#FF4500', '#00CED1'];
+          return (
             <motion.div
+              key={`bomb-${i}`}
+              className="absolute pointer-events-none"
+              style={positions[i]}
+              initial={{ opacity: 0, scale: 0 }}
               animate={{
-                scale: [1, 1.2, 1],
-                opacity: [0.8, 1, 0.8],
+                opacity: [0, 1, 0.8, 0],
+                scale: [0, 1.2, 1.5, 2],
+              }}
+              transition={{
+                duration: 2.5,
+                repeat: Infinity,
+                delay: i * 0.8,
+                ease: "easeOut",
+              }}
+            >
+              {/* Explosion Center */}
+              <motion.div
+                className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 w-4 h-4 rounded-full"
+                animate={{
+                  scale: [0, 1.5, 0],
+                  opacity: [1, 0.8, 0],
+                }}
+                transition={{
+                  duration: 0.6,
+                  repeat: Infinity,
+                  delay: i * 0.8,
+                }}
+                style={{
+                  background: `radial-gradient(circle, ${colors[i % colors.length]}, transparent)`,
+                  boxShadow: `0 0 30px ${colors[i % colors.length]}`,
+                }}
+              />
+              {/* Confetti Particles */}
+              {[...Array(20)].map((_, j) => {
+                const angle = (j * 360) / 20;
+                const distance = 60 + Math.random() * 40;
+                const particleColor = colors[j % colors.length];
+                return (
+                  <motion.div
+                    key={j}
+                    className="absolute left-1/2 top-1/2 w-2 h-2 rounded-full"
+                    initial={{ x: 0, y: 0, opacity: 1 }}
+                    animate={{
+                      x: Math.cos((angle * Math.PI) / 180) * distance,
+                      y: Math.sin((angle * Math.PI) / 180) * distance,
+                      opacity: [1, 1, 0],
+                      scale: [1, 0.5, 0],
+                    }}
+                    transition={{
+                      duration: 2,
+                      repeat: Infinity,
+                      delay: i * 0.8,
+                      ease: "easeOut",
+                    }}
+                    style={{
+                      background: particleColor,
+                      boxShadow: `0 0 8px ${particleColor}`,
+                    }}
+                  />
+                );
+              })}
+            </motion.div>
+          );
+        })}
+
+        {/* Glitter Particles */}
+        {mounted && [...Array(30)].map((_, i) => {
+          const colors = ['#FFD700', '#FF1493', '#00FFFF', '#FF6B35', '#32CD32', '#FF69B4', '#FFFFFF'];
+          const left = `${Math.random() * 100}%`;
+          const top = `${Math.random() * 100}%`;
+          const delay = Math.random() * 3;
+          const duration = 2 + Math.random() * 2;
+          const color = colors[Math.floor(Math.random() * colors.length)];
+          const size = 3 + Math.random() * 4;
+          
+          return (
+            <motion.div
+              key={`glitter-${i}`}
+              className="absolute pointer-events-none rounded-full"
+              style={{
+                left,
+                top,
+                width: `${size}px`,
+                height: `${size}px`,
+                background: color,
+                boxShadow: `0 0 ${size * 2}px ${color}`,
+              }}
+              animate={{
+                opacity: [0, 1, 1, 0],
+                scale: [0, 1, 1, 0],
+                y: [0, -20],
+                x: [0, (Math.random() - 0.5) * 40],
+              }}
+              transition={{
+                duration,
+                repeat: Infinity,
+                delay,
+                ease: "easeInOut",
+              }}
+            />
+          );
+        })}
+
+        {/* Sparkle Bursts */}
+        {mounted && [...Array(8)].map((_, i) => {
+          const positions = [
+            { left: '15%', top: '30%' },
+            { left: '25%', top: '60%' },
+            { left: '40%', top: '45%' },
+            { left: '55%', top: '70%' },
+            { left: '75%', top: '50%' },
+            { left: '85%', top: '35%' },
+            { left: '20%', top: '80%' },
+            { left: '80%', top: '75%' },
+          ];
+          const colors = ['#FFD700', '#FF1493', '#00FFFF', '#FF6B35', '#32CD32'];
+          return (
+            <motion.div
+              key={`sparkle-${i}`}
+              className="absolute pointer-events-none"
+              style={positions[i]}
+              animate={{
+                opacity: [0, 1, 0],
+                scale: [0, 1.5, 0],
+                rotate: [0, 180, 360],
               }}
               transition={{
                 duration: 1.5,
                 repeat: Infinity,
+                delay: i * 0.5,
                 ease: "easeInOut",
               }}
-              className="absolute -top-10 left-1/2 transform -translate-x-1/2 w-5 h-8 bg-gradient-to-t from-orange-600 via-yellow-400 to-yellow-200 rounded-full"
-              style={{
-                filter: 'blur(1px)',
-                boxShadow: '0 0 30px rgba(255, 165, 0, 0.8), 0 0 60px rgba(255, 140, 0, 0.5)',
-              }}
-            />
-            {/* Diya bowl */}
-            <div className="w-16 h-8 bg-gradient-to-b from-orange-700 to-orange-900 rounded-b-full border-2 border-orange-500 relative">
-              <div className="absolute -top-1 left-1/2 transform -translate-x-1/2 w-3 h-3 bg-yellow-400 rounded-full shadow-lg" />
-            </div>
-          </div>
-        </motion.div>
-
-        {/* Right Diya */}
-        <motion.div
-          className="absolute right-8 md:right-16 top-1/2 transform -translate-y-1/2 hidden lg:block"
-          animate={{
-            y: [0, -10, 0],
-          }}
-          transition={{
-            duration: 3,
-            repeat: Infinity,
-            ease: "easeInOut",
-            delay: 1.5,
-          }}
-        >
-          <div className="relative">
-            {/* Flame */}
-            <motion.div
-              animate={{
-                scale: [1, 1.2, 1],
-                opacity: [0.8, 1, 0.8],
-              }}
-              transition={{
-                duration: 1.5,
-                repeat: Infinity,
-                ease: "easeInOut",
-                delay: 0.75,
-              }}
-              className="absolute -top-10 left-1/2 transform -translate-x-1/2 w-5 h-8 bg-gradient-to-t from-orange-600 via-yellow-400 to-yellow-200 rounded-full"
-              style={{
-                filter: 'blur(1px)',
-                boxShadow: '0 0 30px rgba(255, 165, 0, 0.8), 0 0 60px rgba(255, 140, 0, 0.5)',
-              }}
-            />
-            {/* Diya bowl */}
-            <div className="w-16 h-8 bg-gradient-to-b from-orange-700 to-orange-900 rounded-b-full border-2 border-orange-500 relative">
-              <div className="absolute -top-1 left-1/2 transform -translate-x-1/2 w-3 h-3 bg-yellow-400 rounded-full shadow-lg" />
-            </div>
-          </div>
-        </motion.div>
-
-        {/* Subtle Fireworks */}
-        {mounted && [...Array(3)].map((_, i) => (
-          <motion.div
-            key={`firework-${i}`}
-            className="absolute pointer-events-none"
-            style={{
-              left: `${25 + i * 25}%`,
-              top: '15%',
-            }}
-            initial={{ opacity: 0, scale: 0 }}
-            animate={{
-              opacity: [0, 0.4, 0],
-              scale: [0, 1.5, 2],
-            }}
-            transition={{
-              duration: 3,
-              repeat: Infinity,
-              delay: i * 2,
-              ease: "easeOut",
-            }}
-          >
-            {[...Array(12)].map((_, j) => {
-              const colors = ['#FFD700', '#FF6B35', '#FF1493', '#00FFFF', '#32CD32', '#FF69B4'];
-              const color = colors[j % colors.length];
-              return (
-                <div
+            >
+              {[...Array(8)].map((_, j) => (
+                <motion.div
                   key={j}
-                  className="absolute w-0.5 h-12 rounded-full"
+                  className="absolute w-1 h-6 rounded-full"
                   style={{
-                    transform: `rotate(${j * 30}deg)`,
-                    transformOrigin: 'center',
+                    transform: `rotate(${j * 45}deg)`,
+                    transformOrigin: 'center bottom',
                     left: '50%',
                     top: '50%',
                     marginLeft: '-1px',
-                    marginTop: '-24px',
-                    background: `linear-gradient(to top, transparent, ${color})`,
-                    boxShadow: `0 0 8px ${color}`,
+                    marginTop: '-12px',
+                    background: `linear-gradient(to top, ${colors[i % colors.length]}, transparent)`,
+                    boxShadow: `0 0 6px ${colors[i % colors.length]}`,
                   }}
                 />
-              );
-            })}
-          </motion.div>
-        ))}
+              ))}
+            </motion.div>
+          );
+        })}
 
         {endDate ? (
           <motion.div
@@ -297,12 +342,22 @@ export default function CountdownSection() {
             transition={{ duration: 0.8 }}
             className="max-w-3xl mx-auto px-6"
           >
-            <h2 className="text-4xl md:text-6xl font-bold tracking-tight uppercase text-white mb-4">
-              EXCITING OFFERS
+            <h2 className="text-4xl md:text-4xl font-bold tracking-tight uppercase text-white mb-4">
+              YEAR END DHAMAKA SALE OFFERS
             </h2>
-            <h3 className="text-2xl md:text-3xl font-light text-red-400 mb-6">
-              Coming Soon
-            </h3>
+            <motion.h3 
+              className="text-2xl md:text-3xl font-light text-red-400 mb-6"
+              animate={{
+                opacity: [1, 0, 1],
+              }}
+              transition={{
+                duration: 1,
+                repeat: Infinity,
+                ease: "easeInOut",
+              }}
+            >
+              Live Now
+            </motion.h3>
             <p className="text-xl text-gray-300 mb-8">
               Be the first to know about our exclusive Toyota deals and premium offers
             </p>
@@ -313,7 +368,7 @@ export default function CountdownSection() {
               onClick={() => setShowForm(true)}
               className="bg-red-600 hover:bg-red-700 text-white text-lg font-bold py-4 px-12 rounded-lg uppercase tracking-wider transition-all duration-300 shadow-lg hover:shadow-xl border border-red-500 cursor-pointer relative z-10"
             >
-              Get Notified
+              Unlock Offers
             </motion.button>
           </motion.div>
         )}
