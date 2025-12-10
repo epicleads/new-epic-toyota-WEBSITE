@@ -12,6 +12,10 @@ import Footer from "./components/Footer";
 import { BUSINESS_INFO } from "./lib/business-info";
 import Header from "./components/header";
 
+// Force dynamic rendering because we fetch campaign banners from API
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 // COMPREHENSIVE SEO - Dominate ALL Toyota searches in Chennai (Dealer, Showroom, Offers, Models)
 export const metadata: Metadata = {
   title: "Epic Toyota Chennai - #1 Authorized Dealer Mount Road & Vyasarpadi | Latest Offers 2025",

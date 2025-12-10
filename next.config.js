@@ -1,12 +1,10 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Temporarily disable TypeScript and ESLint errors for build
+  // Temporarily disable TypeScript errors for build
   typescript: {
     ignoreBuildErrors: true,
   },
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
+  // Note: ESLint configuration is now handled via eslint.config.js or .eslintrc
 
   // Performance optimizations for Core Web Vitals
   experimental: {
@@ -125,8 +123,22 @@ const nextConfig = {
     return config;
   },
 
+  // Turbopack configuration (Next.js 16 uses Turbopack by default)
+  // Add empty config to silence warning when using webpack for production builds
+  turbopack: {},
+
   // Optimized build output for better delivery
   output: 'standalone',
+  
+  // Redirect missing mg-assets to prevent 404 errors (legacy references)
+  async rewrites() {
+    return [
+      {
+        source: '/mg-assets/:path*',
+        destination: '/api/mg-assets/:path*', // Route to API handler
+      },
+    ];
+  },
   
   // Logging for performance monitoring
   logging: {

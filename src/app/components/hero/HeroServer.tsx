@@ -26,7 +26,7 @@ async function getActiveBanner(): Promise<Banner | null> {
     const url = `${API_BASE}/admin/epic-toyota/campaign-banners/active`;
     
     const response = await fetch(url, {
-      cache: 'no-cache',
+      cache: 'no-store', // Force dynamic fetch - no caching
       headers: {
         'Accept': 'application/json',
       },
