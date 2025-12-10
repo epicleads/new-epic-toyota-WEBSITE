@@ -46,10 +46,8 @@ const CLIENT_ID_COOKIE = 'epic_client_id_v2';
 const SESSION_STORAGE_KEY = 'epic_session_v2';
 const QUEUE_STORAGE_KEY = 'epic_queue_v2';
 
-// API endpoint
-const ANALYTICS_ENDPOINT = process.env.NODE_ENV === 'production' 
-  ? 'https://your-backend.com/admin/epic-toyota/events'
-  : 'http://localhost:3001/admin/epic-toyota/events';
+// API endpoint - use environment variable if set, otherwise disable analytics events
+const ANALYTICS_ENDPOINT = process.env.NEXT_PUBLIC_ANALYTICS_ENDPOINT || null;
 
 export default function ConsentManager() {
   // State management
@@ -146,6 +144,11 @@ export default function ConsentManager() {
 
     // Main tracking method
     track(eventType: string, eventName?: string, payload?: EventPayload): void {
+      // Don't track if endpoint is not configured
+      if (!ANALYTICS_ENDPOINT) {
+        return;
+      }
+
       const event: AnalyticsEvent = {
         client_id: this.clientId,
         session_id: this.sessionId,
@@ -329,6 +332,11 @@ export default function ConsentManager() {
     }
 
     private setupAutoFlush(): void {
+      // Don't set up auto-flush if endpoint is not configured
+      if (!ANALYTICS_ENDPOINT) {
+        return;
+      }
+
       // Flush every 30 seconds
       setInterval(() => {
         if (this.queue.length > 0) {
@@ -354,6 +362,13 @@ export default function ConsentManager() {
     // Asynchronous flush
     async flush(): Promise<void> {
       if (this.queue.length === 0) return;
+      
+      // Skip if endpoint is not configured
+      if (!ANALYTICS_ENDPOINT) {
+        this.queue = [];
+        this.saveQueueToStorage();
+        return;
+      }
 
       const events = [...this.queue];
       this.queue = [];
@@ -369,7 +384,12 @@ export default function ConsentManager() {
         });
 
         if (!response.ok) {
-          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+          // Only log non-404 errors to avoid noise
+          if (response.status !== 404) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+          }
+          // Silently ignore 404 errors (endpoint not configured)
+          return;
         }
 
         // Reset retry count on success
@@ -378,7 +398,16 @@ export default function ConsentManager() {
         });
 
       } catch (error) {
-        console.warn('Failed to send analytics events:', error);
+        // Only log if it's not a 404 or network error
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        if (!errorMessage.includes('404') && !errorMessage.includes('Failed to fetch')) {
+          console.warn('Failed to send analytics events:', error);
+        }
+        
+        // Don't re-queue if endpoint doesn't exist
+        if (errorMessage.includes('404')) {
+          return;
+        }
         
         // Re-queue failed events with exponential backoff
         events.forEach(event => {
@@ -399,6 +428,13 @@ export default function ConsentManager() {
     // Synchronous flush for page unload
     private flushSync(): void {
       if (this.queue.length === 0) return;
+      
+      // Skip if endpoint is not configured
+      if (!ANALYTICS_ENDPOINT) {
+        this.queue = [];
+        localStorage.removeItem(QUEUE_STORAGE_KEY);
+        return;
+      }
 
       try {
         const events = [...this.queue];
@@ -409,7 +445,7 @@ export default function ConsentManager() {
         this.queue = [];
         localStorage.removeItem(QUEUE_STORAGE_KEY);
       } catch (error) {
-        console.warn('Failed to send beacon:', error);
+        // Silently fail - endpoint might not exist
       }
     }
 
@@ -514,26 +550,37 @@ export default function ConsentManager() {
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
+    // Clear any existing events in queue if endpoint is not configured
+    if (!ANALYTICS_ENDPOINT) {
+      try {
+        localStorage.removeItem(QUEUE_STORAGE_KEY);
+      } catch (error) {
+        // Ignore localStorage errors
+      }
+    }
+
     // Check if consent already given
     const existingConsent = getCookie(CONSENT_COOKIE);
     if (existingConsent) {
       const consentData = JSON.parse(existingConsent);
       setConsent(consentData);
       
-      // Initialize tracking
-      const cId = getClientId();
-      setClientId(cId);
-      
-      const session = initializeSession();
-      const newTracker = new EpicToyotaTracker(cId, session.id, consentData);
-      setTracker(newTracker);
+      // Initialize tracking only if endpoint is configured
+      if (ANALYTICS_ENDPOINT) {
+        const cId = getClientId();
+        setClientId(cId);
+        
+        const session = initializeSession();
+        const newTracker = new EpicToyotaTracker(cId, session.id, consentData);
+        setTracker(newTracker);
+        
+        // Track page view
+        setTimeout(() => newTracker.trackPageView(), 100);
+      }
       
       // Load external scripts if consented
       if (consentData.analytics) loadGA4();
       if (consentData.marketing) loadMetaPixel();
-      
-      // Track page view
-      setTimeout(() => newTracker.trackPageView(), 100);
     } else {
       setShowBanner(true);
     }
@@ -544,8 +591,10 @@ export default function ConsentManager() {
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
 
-    // Scroll depth tracking
+    // Scroll depth tracking (only if endpoint is configured)
     const handleScroll = () => {
+      if (!ANALYTICS_ENDPOINT) return;
+      
       const scrollTop = window.scrollY;
       const docHeight = document.documentElement.scrollHeight - window.innerHeight;
       const scrollPercent = Math.round((scrollTop / docHeight) * 100);
@@ -561,17 +610,23 @@ export default function ConsentManager() {
     const throttledScrollHandler = throttle(handleScroll, 1000);
     window.addEventListener('scroll', throttledScrollHandler, { passive: true });
 
-    // Global error tracking
+    // Global error tracking (only if endpoint is configured)
     const handleError = (event: ErrorEvent) => {
-      tracker?.trackError(new Error(event.message), event.filename);
+      if (ANALYTICS_ENDPOINT) {
+        tracker?.trackError(new Error(event.message), event.filename);
+      }
     };
 
     const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
-      tracker?.trackError(new Error(String(event.reason)), 'unhandled_promise_rejection');
+      if (ANALYTICS_ENDPOINT) {
+        tracker?.trackError(new Error(String(event.reason)), 'unhandled_promise_rejection');
+      }
     };
 
-    window.addEventListener('error', handleError);
-    window.addEventListener('unhandledrejection', handleUnhandledRejection);
+    if (ANALYTICS_ENDPOINT) {
+      window.addEventListener('error', handleError);
+      window.addEventListener('unhandledrejection', handleUnhandledRejection);
+    }
 
     // Cleanup
     return () => {
@@ -635,38 +690,40 @@ export default function ConsentManager() {
       setCookie(CONSENT_COOKIE, JSON.stringify(newConsent), 365);
       setConsent(newConsent);
       
-      // Initialize or update tracking
-      const cId = getClientId();
-      setClientId(cId);
-      
-      let session = sessionData;
-      if (!session) {
-        session = initializeSession();
-      }
-      
-      let currentTracker = tracker;
-      if (!currentTracker) {
-        currentTracker = new EpicToyotaTracker(cId, session.id, newConsent);
-        setTracker(currentTracker);
-      } else {
-        currentTracker.updateConsent(newConsent);
+      // Initialize or update tracking only if endpoint is configured
+      if (ANALYTICS_ENDPOINT) {
+        const cId = getClientId();
+        setClientId(cId);
+        
+        let session = sessionData;
+        if (!session) {
+          session = initializeSession();
+        }
+        
+        let currentTracker = tracker;
+        if (!currentTracker) {
+          currentTracker = new EpicToyotaTracker(cId, session.id, newConsent);
+          setTracker(currentTracker);
+        } else {
+          currentTracker.updateConsent(newConsent);
+        }
+
+        // Track consent decision
+        currentTracker.track('consent_updated', 'privacy_action', {
+          analytics_consent: newConsent.analytics,
+          marketing_consent: newConsent.marketing,
+          preferences_consent: newConsent.preferences
+        });
+
+        // Track initial page view if new session
+        if (!tracker) {
+          setTimeout(() => currentTracker!.trackPageView(), 100);
+        }
       }
 
       // Load external scripts
       if (newConsent.analytics) loadGA4();
       if (newConsent.marketing) loadMetaPixel();
-
-      // Track consent decision
-      currentTracker.track('consent_updated', 'privacy_action', {
-        analytics_consent: newConsent.analytics,
-        marketing_consent: newConsent.marketing,
-        preferences_consent: newConsent.preferences
-      });
-
-      // Track initial page view if new session
-      if (!tracker) {
-        setTimeout(() => currentTracker!.trackPageView(), 100);
-      }
 
       setShowBanner(false);
       setShowSuccess(true);
